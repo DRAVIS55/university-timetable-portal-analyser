@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Samuel Kibunja | Portfolio</title>
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'assets/main.css' %}">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- Sidebar Navigation -->
+  <nav id="nav_bar">
+    <div id="title">
+      <p>SAMUEL KIBUNJA</p>
+      <p class="heading typing">Full Stack Web Developer</p>
+    </div>
+    <div id="profile_div">
+      <img src="{% static 'assets/dravis.jpg' %}" id="profile_div_pic" alt="profile">
+    </div>
+    <ul>
+      <li><a href="{% url 'personal_profile' %}">Personal Profile</a></li>
+<li><a href="{% url 'education' %}">Education Background</a></li>
+<li><a href="{% url 'skills' %}">Tech Skills</a></li>
+<li><a href="{% url 'experience' %}">Experiences</a></li>
+<li><a href="{% url 'projects' %}">Projects</a></li>
+<li><a href="{% url 'references' %}">References</a></li>
+<li><a href="{% url 'contact' %}">Contact Info</a></li>
+
+    </ul>
+  </nav>
+
+  <!-- Main Content -->
+  <main id="content_bar">
+    <header>
+      <h1 id="header">Welcome to Drav-Tech Solutions</h1>
+      <p id="welcome_note">"Solutions with Expertise"</p>
+    </header>
+
+    <!-- About -->
+    <section id="about_panel" class="card  fade-in">
+      <h2>About Me</h2>
+      <p>
+        Drav-tech is a tech-company offering IT solutions. Founded by Samuel Kibunja (Dravis),
+        it is driven by the mission to provide world-class solutions with customer satisfaction at the core.
+      </p>
+      <a href="{% url 'about_us' %}" class="btn">More About Us</a>
+
+    </section>
+
+    <!-- Projects -->
+    <section id="projects" class="card  fade-in">
+      <h2>Projects</h2>
+      <p>
+        Check out some of my works on
+        <a href="https://github.com/Dravis55" target="_blank" class="links">GitHub</a>.
+      </p>
+      <a class="btn">View Live Projects</a>
+    </section>
+
+    <!-- Contact -->
+    <section id="contact" class="card  fade-in">
+      <h2>Contact Me</h2>
+      <p>Email: <a class="links">samuelkibunja55@gmail.com</a></p>
+      <p>Phone: <a class="links">+254 758 067 458</a></p>
+<form id="contact_form" method="post">
+    {% csrf_token %}
+    <input type="text" name="name" placeholder="Your Name" required>
+    <input type="email" name="email" placeholder="Your Email" required>
+    <textarea name="message" placeholder="Message" rows="4" required></textarea>
+    <button type="submit" class="btn">Send Message</button>
+</form>
+
+    </section>
+
+    <!-- Footer -->
+    <footer id="footer">
+      <p>&copy; 2025 DravTech | Built by Samuel Kibunja</p>
+    </footer>
+  </main>
+  <button id="scrollTopBtn">&#8679;</button>
+
+  <script>
+  const faders = document.querySelectorAll('.fade-in');
+  const appearOptions = { threshold: 0.2 };
+  const appearOnScroll = new IntersectionObserver(function(entries, observer) {
+    entries.forEach(entry => {
+      if (!entry.isIntersecting) return;
+      entry.target.classList.add("visible");
+      observer.unobserve(entry.target);
+    });
+  }, appearOptions);
+
+  faders.forEach(fader => { appearOnScroll.observe(fader); });
+  
+  const scrollBtn = document.getElementById("scrollTopBtn");
+
+  // Show button when scrolling down
+  window.addEventListener("scroll", () => {
+    if (window.scrollY > 300) {
+      scrollBtn.classList.add("show");
+    } else {
+      scrollBtn.classList.remove("show");
+    }
+  });
+
+  // Scroll smoothly to top when clicked
+  scrollBtn.addEventListener("click", () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+
+
+</script>
+
+</body>
+</html>
