@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+{% block content %}
+<div id="main-panel" class="d-flex h-100">
+   <!-- Sidebar -->
+   <div id="menu-panel" class="p-3 bg-light border-end" style="width: 220px;">
+       <h5 class="mb-3">Menu</h5>
+       <ul class="list-unstyled">
+           <li><a href="#" onclick="showPane('chat')">💬 Main Chat</a></li>
+           <li><a href="#" onclick="showPane('contacts')">👥 Contacts</a></li>
+           <li><a href="#" onclick="showPane('report')">🚨 Report</a></li>
+           <li><a href="#" onclick="showPane('private')">🔒 Private Chat</a></li>
+       </ul>
+   </div>
+
+   <!-- Right Side Panel -->
+   <div id="content-panel" class="flex-grow-1 d-flex flex-column">
+
+       <!-- Main Chat -->
+       <div id="chat-pane" class="pane">
+           <div id="chat-messages" class="flex-grow-1 p-3 overflow-auto border-bottom" style="height: 70vh;">
+               <p class="text-muted">Loading messages...</p>
+           </div>
+
+           <!-- Message Input -->
+           <form id="chat-form" class="d-flex p-2 border-top">
+               {% csrf_token %}
+               <input type="text" id="chat-input" class="form-control me-2" placeholder="Type your message...">
+               <button type="submit" class="btn btn-primary">Send</button>
+           </form>
+       </div>
+
+       <!-- Contacts -->
+       <div id="contacts-pane" class="pane d-none p-3">
+           <h4>👥 Contacts</h4>
+           <ul class="list-group">
+               {% for u in users %}
+               <li class="list-group-item d-flex justify-content-between align-items-center">
+                   {{ u.username }}
+                   <button class="btn btn-sm btn-outline-primary"
+                           onclick="openPrivateChat('{{ u.username }}')">
+                           Message Privately
+                   </button>
+               </li>
+               {% empty %}
+               <li class="list-group-item">No contacts available</li>
+               {% endfor %}
+           </ul>
+       </div>
+
+       <!-- Report -->
+       <div id="report-pane" class="pane d-none p-3">
+           <h4>🚨 Report a Message</h4>
+           <form method="post" action="{% url 'report-message' %}">
+               {% csrf_token %}
+               <div class="mb-3">
+                   <label for="message_id" class="form-label">Message ID (if known)</label>
+                   <input type="text" name="message_id" id="message_id" class="form-control">
+               </div>
+               <div class="mb-3">
+                   <label for="reason" class="form-label">Reason</label>
+                   <textarea name="reason" id="reason" rows="4" class="form-control"></textarea>
+               </div>
+               <button type="submit" class="btn btn-danger">Submit Report</button>
+           </form>
+       </div>
+
+       <!-- Private Chat -->
+       <div id="private-pane" class="pane d-none d-flex flex-column">
+           <div class="p-2 border-bottom bg-light">
+               <h5 id="private-header">🔒 Private Chat</h5>
+           </div>
+           <div id="private-messages" class="flex-grow-1 p-3 overflow-auto border-bottom" style="height: 70vh;">
+               <p class="text-muted">Select a contact to start private chat.</p>
+           </div>
+           <form id="private-form" class="d-flex p-2 border-top d-none">
+               {% csrf_token %}
+               <input type="text" id="private-input" class="form-control me-2" placeholder="Type private message...">
+               <button type="submit" class="btn btn-success">Send</button>
+           </form>
+       </div>
+
+   </div>
+</div>
+
+<script>
+function showPane(pane) {
+    document.querySelectorAll('.pane').forEach(el => el.classList.add('d-none'));
+    if (pane === "chat") {
+        document.getElementById("chat-pane").classList.remove("d-none");
+    } else if (pane === "contacts") {
+        document.getElementById("contacts-pane").classList.remove("d-none");
+    } else if (pane === "report") {
+        document.getElementById("report-pane").classList.remove("d-none");
+    } else if (pane === "private") {
+        document.getElementById("private-pane").classList.remove("d-none");
+    }
+}
+
+// ===== Main Chat Loader =====
+function loadMessages() {
+    fetch("{% url 'get-messages' %}")   // fixed endpoint
+      .then(res => res.json())
+      .then(data => {
+          const box = document.getElementById("chat-messages");
+          box.innerHTML = "";
+          data.forEach(msg => {
+              const div = document.createElement("div");
+              div.innerHTML = `<b>${msg.user}</b> [${msg.timestamp}]: ${msg.message}`;
+              box.appendChild(div);
+          });
+          box.scrollTop = box.scrollHeight;
+      });
+}
+
+document.getElementById("chat-form").addEventListener("submit", function(e){
+    e.preventDefault();
+    const text = document.getElementById("chat-input").value;
+    if(text.trim() !== ""){
+        fetch("{% url 'send-message' %}", {   // fixed endpoint
+            method: "POST",
+            headers: {"X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value},
+            body: new URLSearchParams({message: text})
+        }).then(() => {
+            document.getElementById("chat-input").value = "";
+            loadMessages();
+        });
+    }
+});
+
+setInterval(loadMessages, 2000);
+loadMessages();
+
+// ===== Private Chat =====
+let currentPrivateUser = null;
+
+function openPrivateChat(username) {
+    currentPrivateUser = username;
+    showPane("private");
+    document.getElementById("private-header").innerText = "🔒 Chat with " + username;
+    document.getElementById("private-form").classList.remove("d-none");
+    loadPrivateMessages();
+}
+
+function loadPrivateMessages() {
+    if (!currentPrivateUser) return;
+    fetch(`/chat/private/${currentPrivateUser}/`)
+      .then(res => res.json())
+      .then(data => {
+          const box = document.getElementById("private-messages");
+          box.innerHTML = "";
+          data.forEach(msg => {
+              const div = document.createElement("div");
+              div.innerHTML = `<b>${msg.user}</b> [${msg.timestamp}]: ${msg.message}`;
+              box.appendChild(div);
+          });
+          box.scrollTop = box.scrollHeight;
+      });
+}
+
+document.getElementById("private-form").addEventListener("submit", function(e){
+    e.preventDefault();
+    const text = document.getElementById("private-input").value;
+    if(text.trim() !== "" && currentPrivateUser){
+        fetch(`/chat/private/${currentPrivateUser}/send/`, {
+            method: "POST",
+            headers: {"X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value},
+            body: new URLSearchParams({message: text})
+        }).then(() => {
+            document.getElementById("private-input").value = "";
+            loadPrivateMessages();
+        });
+    }
+});
+
+// refresh private chat every 2s (if open)
+setInterval(loadPrivateMessages, 2000);
+</script>
+{% endblock %}

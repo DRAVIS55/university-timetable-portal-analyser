@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container">
+  <h2>📅 University Timetable</h2>
+
+  <!-- ================= FILTER FORM ================= -->
+  <form method="get" class="filter-form">
+    <!-- Program Filter -->
+    <div class="form-group">
+      <label for="course">Program:</label>
+      <input list="course-list" name="course" id="course"
+             value="{{ selected_course }}" placeholder="Type 2–3 letters e.g. COS, MAT...">
+      <datalist id="course-list">
+        {% for c in courses %}
+          <option value="{{ c|upper }}">
+        {% endfor %}
+      </datalist>
+    </div>
+
+    <!-- Year Filter -->
+    <div class="form-group">
+      <label for="year">Year:</label>
+      <select name="year" id="year">
+        <option value="">-- Select Year --</option>
+        {% for y in "123456" %}
+          <option value="{{ y }}" {% if selected_year == y %}selected{% endif %}>Year {{ y }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="form-actions">
+      <button type="submit" class="btn-search">🔍 Search</button>
+      <a href="{% url 'timetable' %}" class="btn-reset">⟳ Reset</a>
+    </div>
+  </form>
+
+  <!-- ================= TIMETABLE TABLE ================= -->
+  {% if timetable_entries %}
+    <div class="table-wrapper">
+      <table class="timetable compact">
+  <thead>
+    <tr>
+      <th>Room</th>
+      {% for slot in slots %}
+        <th>{{ slot }}</th>
+      {% endfor %}
+    </tr>
+  </thead>
+  <tbody>
+    {% regroup timetable_entries by day as day_list %}
+    {% for day in day_list %}
+      <tr class="day-row">
+        <td colspan="{{ slots|length|add:'1' }}">{{ day.grouper }}</td>
+      </tr>
+      {% regroup day.list by room as room_list %}
+      {% for room in room_list %}
+        <tr>
+          <td class="room">{{ room.grouper }}</td>
+          {% for slot in slots %}
+            <td>
+              {% for entry in room.list %}
+                {% if entry.slot == slot %}
+                  <div class="unit">{{ entry.unit_code }} (Y{{ entry.year }})</div>
+                {% endif %}
+              {% endfor %}
+            </td>
+          {% endfor %}
+        </tr>
+      {% endfor %}
+    {% endfor %}
+  </tbody>
+</table>
+
+    </div>
+  {% else %}
+    <p>No timetable entries available.</p>
+  {% endif %}
+</div>
+
+{% endblock %}

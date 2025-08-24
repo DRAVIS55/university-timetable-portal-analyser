@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<div class="container">
+  <h2 class="mb-4 text-capitalize">{{ section }}</h2>
+
+  {% if items %}
+    <div class="row">
+      {% for item in items %}
+        <div class="col-md-4 mb-3">
+          <div class="card shadow-sm h-100">
+
+            {% if section == "news" %}
+              <div class="card-body">
+                <h5>{{ item.title }}</h5>
+                {% if item.media %}
+                  {% if item.is_video %}
+                    <video controls class="w-100">
+                      <source src="{{ item.media.url }}" type="video/mp4">
+                    </video>
+                  {% else %}
+                    <img src="{{ item.media.url }}" class="img-fluid">
+                  {% endif %}
+                {% else %}
+                  <p class="text-muted">No media available</p>
+                {% endif %}
+                <p class="text-muted small">{{ item.created_at|date:"M d, Y H:i" }}</p>
+              </div>
+
+            {% elif section == "hostels" %}
+              {% if item.image %}
+                <img src="{{ item.image.url }}" class="card-img-top" alt="{{ item.name }}">
+              {% else %}
+                <img src="{% static 'images/default_hostel.jpg' %}" class="card-img-top" alt="No image">
+              {% endif %}
+              <div class="card-body">
+                <h5>{{ item.name }}</h5>
+                <p>{{ item.description }}</p>
+              </div>
+
+            {% elif section == "reels" %}
+              {% if item.video %}
+                <video controls class="w-100">
+                  <source src="{{ item.video.url }}" type="video/mp4">
+                </video>
+              {% else %}
+                <p class="text-muted p-3">No video uploaded</p>
+              {% endif %}
+              <div class="card-body"><h5>{{ item.title }}</h5></div>
+
+            {% elif section == "memos" %}
+              <div class="card-body">
+                <h5>{{ item.title }}</h5>
+                {% if item.file %}
+                  <a href="{{ item.file.url }}" target="_blank" class="btn btn-primary">📄 View Memo</a>
+                {% else %}
+                  <p class="text-muted">No file available</p>
+                {% endif %}
+              </div>
+
+            {% elif section == "ads" %}
+              {% if item.image %}
+                <img src="{{ item.image.url }}" class="card-img-top">
+              {% endif %}
+              <div class="card-body">
+                <h5>{{ item.title }}</h5>
+                <p>{{ item.description }}</p>
+                {% if item.link %}
+                  <a href="{{ item.link }}" class="btn btn-info">Visit</a>
+                {% endif %}
+              </div>
+            {% endif %}
+
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p>No content found in {{ section }}</p>
+  {% endif %}
+</div>
+{% endblock %}

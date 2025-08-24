@@ -1,0 +1,13 @@
+
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h2>⚠️ Delete All Timetable Entries</h2>
+    <p>This action will permanently remove <b>all timetable entries</b> from the database.</p>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Yes, delete all</button>
+        <a href="{% url 'timetable' %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

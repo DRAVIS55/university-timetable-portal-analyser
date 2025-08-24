@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h2>💭 Confessions</h2>
+
+    <!-- Display Confessions -->
+    <div class="mb-4">
+        {% if confessions %}
+            <ul class="list-group">
+                {% for c in confessions %}
+                <li class="list-group-item">
+                    <strong>{{ c.user.username }}</strong>:
+                    {{ c.content }}
+                    <small class="text-muted float-end">{{ c.created_at|date:"M d, Y H:i" }}</small>
+                </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No confessions yet. Be the first to share!</p>
+        {% endif %}
+    </div>
+
+    <!-- Form -->
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary mt-2">Send Confession</button>
+    </form>
+</div>
+{% endblock %}

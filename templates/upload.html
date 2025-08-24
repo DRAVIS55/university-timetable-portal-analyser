@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+<body>
+
+
+    <div class="upload-container">
+        <h2>Upload University Timetable (PDF)</h2>
+
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ form.as_p }}
+
+            <button type="submit">Upload & Process</button>
+        </form>
+
+        {% if messages %}
+            <div class="message">
+                {% for message in messages %}
+                    <p class="{% if message.tags %}{{ message.tags }}{% endif %}">{{ message }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+
+</body>
+{% endblock %}

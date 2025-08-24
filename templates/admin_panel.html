@@ -1,0 +1,406 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">⚙️ Admin Panel</h2>
+
+    <!-- ================= Ads Section ================= -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            📢 Manage Advertisements
+            <button class="btn btn-light btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#adFormPanel">➕ Add/Edit Ad</button>
+        </div>
+        <div class="collapse {% if edit_ad %}show{% endif %}" id="adFormPanel">
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="{% if edit_ad %}edit_ad{% else %}add_ad{% endif %}">
+                    {% if edit_ad %}<input type="hidden" name="item_id" value="{{ edit_ad.id }}">{% endif %}
+                    {{ ad_form.as_p }}
+                    <button type="submit" class="btn btn-success">💾 Save</button>
+                    {% if edit_ad %}
+                        <a href="{% url 'admin_panel' %}" class="btn btn-secondary">Cancel</a>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-bordered align-middle">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Image</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ad in ads %}
+                        <tr>
+                            <td>{{ ad.title }}</td>
+                            <td>{% if ad.image %}<img src="{{ ad.image.url }}" style="max-width:100px;" alt="ad image">{% endif %}</td>
+                            <td>{{ ad.created_at }}</td>
+                            <td>
+                                <form method="post" style="display:inline;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="edit_ad">
+                                    <input type="hidden" name="item_id" value="{{ ad.id }}">
+                                    <button type="submit" class="btn btn-warning btn-sm">✏️ Edit</button>
+                                </form>
+                                <a href="{% url 'delete_ad' ad.id %}" class="btn btn-danger btn-sm" onclick="return confirm('Delete this ad?');">❌ Delete</a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="4">No advertisements found</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= News Section ================= -->
+    <div class="card mb-4">
+        <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+            📰 Manage News
+            <button class="btn btn-light btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#newsFormPanel">➕ Add/Edit News</button>
+        </div>
+        <div class="collapse {% if edit_news %}show{% endif %}" id="newsFormPanel">
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="{% if edit_news %}edit_news{% else %}add_news{% endif %}">
+                    {% if edit_news %}<input type="hidden" name="item_id" value="{{ edit_news.id }}">{% endif %}
+                    {{ news_form.as_p }}
+                    <button type="submit" class="btn btn-success">💾 Save</button>
+                    {% if edit_news %}
+                        <a href="{% url 'admin_panel' %}" class="btn btn-secondary">Cancel</a>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-bordered align-middle">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Content</th>
+                            <th>Image/Video</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for news in news_list %}
+                        <tr>
+                            <td>{{ news.title }}</td>
+                            <td>{{ news.content|truncatewords:20 }}</td>
+                            <td>
+                                {% if news.image %}<img src="{{ news.image.url }}" style="max-width:100px;">{% endif %}
+                                {% if news.video %}<video width="200" controls><source src="{{ news.video.url }}" type="video/mp4"></video>{% endif %}
+                            </td>
+                            <td>
+                                <form method="post" style="display:inline;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="edit_news">
+                                    <input type="hidden" name="item_id" value="{{ news.id }}">
+                                    <button type="submit" class="btn btn-warning btn-sm">✏️ Edit</button>
+                                </form>
+                                <a href="{% url 'delete_news' news.id %}" class="btn btn-danger btn-sm" onclick="return confirm('Delete this news?');">❌ Delete</a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="4">No news found</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= Music Section ================= -->
+    <div class="card mb-4">
+        <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+            🎶 Manage Music
+            <button class="btn btn-light btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#musicFormPanel">➕ Add/Edit Music</button>
+        </div>
+        <div class="collapse {% if edit_music %}show{% endif %}" id="musicFormPanel">
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="{% if edit_music %}edit_music{% else %}add_music{% endif %}">
+                    {% if edit_music %}<input type="hidden" name="item_id" value="{{ edit_music.id }}">{% endif %}
+                    {{ music_form.as_p }}
+                    <button type="submit" class="btn btn-success">💾 Save</button>
+                    {% if edit_music %}
+                        <a href="{% url 'admin_panel' %}" class="btn btn-secondary">Cancel</a>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-bordered align-middle">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Description</th>
+                            <th>Audio</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for music in music_list %}
+                        <tr>
+                            <td>{{ music.title }}</td>
+                            <td>{{ music.description|truncatewords:15 }}</td>
+                            <td>
+                                {% if music.audio %}
+                                <audio controls>
+                                    <source src="{{ music.audio.url }}" type="audio/mpeg">
+                                </audio>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <form method="post" style="display:inline;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="edit_music">
+                                    <input type="hidden" name="item_id" value="{{ music.id }}">
+                                    <button type="submit" class="btn btn-warning btn-sm">✏️ Edit</button>
+                                </form>
+                                <a href="{% url 'delete_music' music.id %}" class="btn btn-danger btn-sm" onclick="return confirm('Delete this music post?');">❌ Delete</a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="4">No music available</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= Reels Section ================= -->
+    <div class="card mb-4">
+        <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+            🎥 Manage Reels
+            <button class="btn btn-light btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#reelFormPanel">➕ Add/Edit Reel</button>
+        </div>
+        <div class="collapse {% if edit_reel %}show{% endif %}" id="reelFormPanel">
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="{% if edit_reel %}edit_reel{% else %}add_reel{% endif %}">
+                    {% if edit_reel %}<input type="hidden" name="item_id" value="{{ edit_reel.id }}">{% endif %}
+                    {{ reel_form.as_p }}
+                    <button type="submit" class="btn btn-success">💾 Save</button>
+                    {% if edit_reel %}
+                        <a href="{% url 'admin_panel' %}" class="btn btn-secondary">Cancel</a>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-bordered align-middle">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Video</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reel in reels %}
+                        <tr>
+                            <td>{{ reel.title }}</td>
+                            <td>
+                                {% if reel.video %}
+                                <video width="200" controls>
+                                    <source src="{{ reel.video.url }}" type="video/mp4">
+                                </video>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <form method="post" style="display:inline;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="edit_reel">
+                                    <input type="hidden" name="item_id" value="{{ reel.id }}">
+                                    <button type="submit" class="btn btn-warning btn-sm">✏️ Edit</button>
+                                </form>
+                                <a href="{% url 'delete_reel' reel.id %}" class="btn btn-danger btn-sm" onclick="return
+confirm('Delete this reel?');">❌ Delete</a>
+</td>
+</tr>
+{% empty %}
+<tr><td colspan="3">No reels available</td></tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<!-- ================= Memos Section ================= -->
+<div class="card mb-4">
+    <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+        📝 Manage Memos
+        <button class="btn btn-light btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#memoFormPanel">➕ Add/Edit Memo</button>
+    </div>
+    <div class="collapse {% if edit_memo %}show{% endif %}" id="memoFormPanel">
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="{% if edit_memo %}edit_memo{% else %}add_memo{% endif %}">
+                {% if edit_memo %}<input type="hidden" name="item_id" value="{{ edit_memo.id }}">{% endif %}
+                {{ memo_form.as_p }}
+                <button type="submit" class="btn btn-success">💾 Save</button>
+                {% if edit_memo %}
+                    <a href="{% url 'admin_panel' %}" class="btn btn-secondary">Cancel</a>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered align-middle">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Attachment</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for memo in memos %}
+                    <tr>
+                        <td>{{ memo.title }}</td>
+                        <td>
+                            {% if memo.file %}
+                            <a href="{{ memo.file.url }}" target="_blank">📎 View File</a>
+                            {% endif %}
+                        </td>
+                        <td>{{ memo.created_at }}</td>
+                        <td>
+                            <form method="post" style="display:inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="edit_memo">
+                                <input type="hidden" name="item_id" value="{{ memo.id }}">
+                                <button type="submit" class="btn btn-warning btn-sm">✏️ Edit</button>
+                            </form>
+                            <a href="{% url 'delete_memo' memo.id %}" class="btn btn-danger btn-sm" onclick="return confirm('Delete this memo?');">❌ Delete</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4">No memos available</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- ================= Hostels Section ================= -->
+<div class="card mb-4">
+    <div class="card-header bg-purple text-white d-flex justify-content-between align-items-center">
+        🏠 Manage Hostels
+        <button class="btn btn-light btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#hostelFormPanel">➕ Add/Edit Hostel</button>
+    </div>
+    <div class="collapse {% if edit_hostel %}show{% endif %}" id="hostelFormPanel">
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="{% if edit_hostel %}edit_hostel{% else %}add_hostel{% endif %}">
+                {% if edit_hostel %}<input type="hidden" name="item_id" value="{{ edit_hostel.id }}">{% endif %}
+                {{ hostel_form.as_p }}
+                <button type="submit" class="btn btn-success">💾 Save</button>
+                {% if edit_hostel %}
+                    <a href="{% url 'admin_panel' %}" class="btn btn-secondary">Cancel</a>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered align-middle">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Location</th>
+                        <th>Image</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for hostel in hostels %}
+                    <tr>
+                        <td>{{ hostel.name }}</td>
+                        <td>{{ hostel.location }}</td>
+                        <td>{% if hostel.image %}<img src="{{ hostel.image.url }}" style="max-width:100px;">{% endif %}</td>
+                        <td>
+                            <form method="post" style="display:inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="edit_hostel">
+                                <input type="hidden" name="item_id" value="{{ hostel.id }}">
+                                <button type="submit" class="btn btn-warning btn-sm">✏️ Edit</button>
+                            </form>
+                            <a href="{% url 'delete_hostel' hostel.id %}" class="btn btn-danger btn-sm" onclick="return confirm('Delete this hostel?');">❌ Delete</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4">No hostels available</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- ================= Admin Users Section ================= -->
+<div class="card mb-4">
+    <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+        👤 Manage Admin Users
+        <button class="btn btn-light btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#adminFormPanel">➕ Add/Edit Admin</button>
+    </div>
+    <div class="collapse" id="adminFormPanel">
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="add_admin">
+                {{ admin_form.as_p }}
+                <button type="submit" class="btn btn-success">💾 Save</button>
+            </form>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered align-middle">
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td>{{ user.username }}</td>
+                        <td>{{ user.email }}</td>
+                        <td>
+                            <a href="{% url 'delete_admin' user.id %}" class="btn btn-danger btn-sm" onclick="return confirm('Delete this admin?');">❌ Delete</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="3">No admin users yet</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</div> <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+{% endblock %}

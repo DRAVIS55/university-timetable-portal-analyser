@@ -1,6 +1,9 @@
+
+    # AjiraApp/apps.py
 from django.apps import AppConfig
 
-
-class AjiraappConfig(AppConfig):
+class AjiraAppConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'AjiraApp'
+
+    

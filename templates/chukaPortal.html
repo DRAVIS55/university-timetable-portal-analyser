@@ -1,0 +1,328 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+
+
+<body>
+  <div class="page-layout">
+
+    <!-- LEFT Ads -->
+    {% if ads_left %}
+  <aside id="ads-left">
+    <h3>Sponsored Ads</h3>
+    <div class="ads-grid">
+      {% for ad in ads_left %}
+        <div class="ad-card">
+          {% if ad.image %}
+            <img src="{{ ad.image.url }}" alt="{{ ad.title }}">
+          {% endif %}
+          <h4>{{ ad.title }}</h4>
+          <p>{{ ad.description|truncatewords:15 }}</p>
+          {% if ad.link %}
+            <a href="{{ ad.link }}" target="_blank" class="btn-ad">Visit</a>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  </aside>
+{% endif %}
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+      <!-- Timetable, News, Memos, Reels, Hostels -->
+    
+ <!-- Timetable Panel -->
+<section id="timetable">
+  <h2>📅 University Timetable</h2>
+
+  <!-- Filter Form -->
+  <form method="get" class="filter-form">
+    <div class="form-group">
+      <label for="course">Program:</label>
+      <input list="course-list" name="course" id="course" value="{{ selected_course }}" placeholder="Select course...">
+      <datalist id="course-list">
+        {% for c in courses %}
+          <option value="{{ c|upper }}">
+        {% endfor %}
+      </datalist>
+    </div>
+
+    <div class="form-group">
+      <label for="year">Year:</label>
+      <select name="year" id="year">
+        <option value="">-- Select Year --</option>
+        {% for y in "123456" %}
+          <option value="{{ y }}" {% if selected_year == y %}selected{% endif %}>Year {{ y }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn-search">🔍 Search</button>
+      <a href="{% url 'timetable' %}" class="btn-reset">⟳ Reset</a>
+    </div>
+  </form>
+</section>
+
+<!-- Timetable -->
+<div class="table-wrapper">
+  
+
+  <table class="timetable compact" id="timetable-table">
+    <thead>
+      <tr>
+        <th>Room</th>
+        <th>7–10 AM</th>
+        <th>10–1 PM</th>
+        <th>1–4 PM</th>
+        <th>4–7 PM</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% regroup timetable_entries by day as day_list %}
+      {% for day in day_list %}
+        <tr class="day-row"><td colspan="5">{{ day.grouper }}</td></tr>
+        {% regroup day.list by room as room_list %}
+        {% for room in room_list %}
+          <tr>
+            <td class="room">{{ room.grouper }}</td>
+            {% for slot in slots %}
+              <td>
+                {% for entry in room.list %}
+                  {% if slot == entry.time %}
+                    <div class="unit">{{ entry.unit_code }} (Y{{ entry.year }})</div>
+                  {% endif %}
+                {% endfor %}
+              </td>
+            {% endfor %}
+          </tr>
+        {% endfor %}
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+  </section>
+  <div id="timetable">
+    {% for entry in timetable_entries %}
+  {{ entry.day }} | {{ entry.room }} | {{ entry.time }} | {{ entry.unit_code }}<br>
+{% endfor %}
+
+  </div>
+
+<!-- ================== NEWS ================== -->
+<section id="news">
+  <h3>📰 News</h3>
+  <div class="media-grid">
+    {% for news in news_list %}
+      <div class="media-card">
+        <p class="media-title">{{ news.title }}</p>
+        {% if news.media %}
+          {% if ".mp4" in news.media.url %}
+            <div class="thumb-wrap is-video" onclick="openViewer('{{ news.media.url }}','video')">
+              <video class="thumb-video" src="{{ news.media.url }}" preload="metadata" muted playsinline></video>
+              <span class="play-badge">▶</span>
+            </div>
+          {% else %}
+            <img class="thumb-image" src="{{ news.media.url }}" alt="{{ news.title }}"
+                 onclick="openViewer('{{ news.media.url }}','image')">
+          {% endif %}
+        {% endif %}
+      </div>
+    {% empty %}
+      <p>No news available</p>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- ================== MEMOS ================== -->
+<section id="memos">
+  <h3>📢 Memos</h3>
+  <div class="media-grid">
+    {% for memo in memos %}
+      <div class="media-card">
+        <p class="media-title">{{ memo.title }}</p>
+        {% if memo.file %}
+          {% if ".pdf" in memo.file.url %}
+            <a href="{{ memo.file.url }}" target="_blank" class="pdf-link">📄 Open PDF</a>
+          {% else %}
+            <img class="thumb-image" src="{{ memo.file.url }}" alt="{{ memo.title }}"
+                 onclick="openViewer('{{ memo.file.url }}','image')">
+          {% endif %}
+        {% endif %}
+      </div>
+    {% empty %}
+      <p>No memos available</p>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- ================== REELS ================== -->
+<section id="reels">
+  <h3>🎥 Reels</h3>
+  <div class="media-grid">
+    {% for reel in reels %}
+      {% if reel.video %}
+        <div class="media-card">
+          <div class="thumb-wrap is-video" onclick="openViewer('{{ reel.video.url }}','video')">
+            <video class="thumb-video" src="{{ reel.video.url }}" preload="metadata" muted playsinline></video>
+            <span class="play-badge">▶</span>
+          </div>
+        </div>
+      {% endif %}
+    {% empty %}
+      <p>No reels uploaded</p>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- ================== HOSTELS ================== -->
+<section id="hostels">
+  <h3>🏠 Hostels Available</h3>
+  <div class="media-grid">
+    {% for hostel in hostels %}
+      <div class="media-card">
+        {% if hostel.image %}
+          <img class="thumb-image" src="{{ hostel.image.url }}" alt="Hostel image"
+               onclick="openViewer('{{ hostel.image.url }}','image')">
+        {% endif %}
+        <p class="media-desc">{{ hostel.description|truncatewords:20 }}</p>
+      </div>
+    {% empty %}
+      <p>No hostels listed</p>
+    {% endfor %}
+  </div>
+</section>
+
+
+
+
+
+<!-- Timetable, News, Memos, Reels, Hostels -->
+      
+    </div>
+
+    <!-- RIGHT Ads -->
+    {% if ads_right %}
+  <aside id="ads-right">
+    <h3>Sponsored Ads</h3>
+    <div class="ads-grid">
+      {% for ad in ads_right %}
+        <div class="ad-card">
+          {% if ad.image %}
+            <img src="{{ ad.image.url }}" alt="{{ ad.title }}">
+          {% endif %}
+          <h4>{{ ad.title }}</h4>
+          <p>{{ ad.description|truncatewords:15 }}</p>
+          {% if ad.link %}
+            <a href="{{ ad.link }}" target="_blank" class="btn-ad">Visit</a>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  </aside>
+{% endif %}
+
+  </div>
+  <!-- ================== FULLSCREEN VIEWER (add once near end of body) ================== -->
+<div id="media-viewer" class="media-viewer" aria-hidden="true">
+  <button class="close-btn" type="button" aria-label="Close" onclick="closeViewer()">✖</button>
+  <div id="viewer-content"></div>
+</div>
+
+  <script>
+function openViewer(url, type){
+  const viewer = document.getElementById("media-viewer");
+  const content = document.getElementById("viewer-content");
+  if(type === "video"){
+    content.innerHTML = `<video src="${url}" controls autoplay></video>`;
+  } else {
+    content.innerHTML = `<img src="${url}" alt="media">`;
+  }
+  viewer.classList.add("active");
+}
+
+function closeViewer(){
+  const viewer = document.getElementById("media-viewer");
+  viewer.classList.remove("active");
+  document.getElementById("viewer-content").innerHTML = "";
+}
+
+/** Pause all <video> elements on the page except an optional one */
+function pauseAllVideos(exceptEl = null) {
+  const vids = document.querySelectorAll('video');
+  vids.forEach(v => {
+    if (v !== exceptEl) {
+      try { v.pause(); } catch(_) {}
+    }
+  });
+}
+
+/** Open fullscreen viewer with image or video; guarantees only one playing */
+function openViewer(url, type){
+  const viewer = document.getElementById('media-viewer');
+  const content = document.getElementById('viewer-content');
+
+  // Stop any thumbnail/background videos first
+  pauseAllVideos();
+
+  if (type === 'video') {
+    content.innerHTML = `<video id="viewer-video" src="${url}" controls autoplay playsinline></video>`;
+    // Ensure only the overlay video can play
+    const overlayVid = document.getElementById('viewer-video');
+    pauseAllVideos(overlayVid);
+    // optional: focus for keyboard controls
+    overlayVid.focus && overlayVid.focus();
+  } else {
+    content.innerHTML = `<img src="${url}" alt="media">`;
+  }
+
+  // Lock scroll and show
+  viewer.classList.add('active');
+  viewer.setAttribute('aria-hidden', 'false');
+  document.body.style.overflow = 'hidden';
+}
+
+/** Close viewer and stop any overlay playback */
+function closeViewer(){
+  const viewer = document.getElementById('media-viewer');
+  const content = document.getElementById('viewer-content');
+  // Stop overlay video if present
+  const overlayVid = document.getElementById('viewer-video');
+  if (overlayVid) { try { overlayVid.pause(); } catch(_) {} }
+  content.innerHTML = '';
+  viewer.classList.remove('active');
+  viewer.setAttribute('aria-hidden', 'true');
+  document.body.style.overflow = '';
+}
+
+/** Safety net: if any thumbnail video tries to play, open it in viewer instead */
+document.addEventListener('play', function(e){
+  const el = e.target;
+  if (el.tagName && el.tagName.toLowerCase() === 'video') {
+    // If it's not the overlay video and not inside the viewer -> reroute to overlay
+    if (!el.closest('#media-viewer')) {
+      e.target.pause();
+      const src = el.currentSrc || el.src;
+      if (src) openViewer(src, 'video');
+    } else {
+      // If overlay video started, pause all others
+      pauseAllVideos(el);
+    }
+  }
+}, true);
+
+/** Also close viewer on ESC or backdrop click */
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeViewer();
+});
+document.getElementById('media-viewer').addEventListener('click', (e) => {
+  // close when clicking outside the content
+  if (e.target.id === 'media-viewer') closeViewer();
+});
+</script>
+
+
+</body>
+
+
+{% endblock %}
